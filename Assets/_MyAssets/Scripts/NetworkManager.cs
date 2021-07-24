@@ -7,15 +7,25 @@ using UnityEngine;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
+    public static NetworkManager singleton;
     public GameObject playerPrefab;
     public Recorder primaryRecorder;
     public Transform startTransform;
+    public Transform holdingArea;
     public GameObject connectOnlineButton;
+    public DoorObject holdingAreaDoor;
+    public DoorObject initialAreaDoor;
 
     //[SerializeField]
     private byte maxPlayersPerRoom = 15;
+
+    public delegate void PlayerCountUpdatedCallback();
+    public event PlayerCountUpdatedCallback onPlayerCountUpdated;
+
     private void Awake()
     {
+        singleton = this;
+
         PhotonNetwork.AutomaticallySyncScene = true;
         connectOnlineButton.SetActive(true);
     }
@@ -41,6 +51,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     }
 
     #region Pun Callbacks
+
+    #region Connection and Disconnection
     public override void OnConnectedToMaster()
     {
         Debug.Log("Connected To Master -- PUN");
@@ -69,6 +81,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             PhotonNetwork.Instantiate(this.playerPrefab.name, startTransform.position, Quaternion.identity, 0);
             primaryRecorder.StartRecording();
+            Customizer.singleton.UpdateAvailableColors();
         }
     }
 
@@ -77,14 +90,36 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         Debug.Log("Failed To Join Room. | " + message + " | Creating Room Now! -- PUN");
         PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = maxPlayersPerRoom });
     }
-
-    //public override void OnRoomListUpdate(List<RoomInfo> roomList)
-    //{
-    //    base.OnRoomListUpdate(roomList);
-    //    foreach(RoomInfo roomInfo in roomList)
-    //    {
-    //        print(roomInfo.Name);
-    //    }
-    //}
     #endregion
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        base.OnPlayerEnteredRoom(newPlayer);
+        onPlayerCountUpdated?.Invoke();
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        base.OnPlayerLeftRoom(otherPlayer);
+        onPlayerCountUpdated?.Invoke();
+    }
+    #endregion
+
+    [PunRPC]
+    public void StartGame_RPC()
+    {
+        NetworkPlayer.LocalPlayer.transform.position = holdingArea.position;
+        StartCoroutine(StartGameRoutine());
+    }
+
+    IEnumerator StartGameRoutine()
+    {
+        for (int i = 10; i > 0; i--)
+        {
+            GameManager.singleton.notification.PlayNotification("Game Starting: " + i);
+            yield return new WaitForSeconds(1.0f);
+        }
+        holdingAreaDoor.OpenDoor();
+        initialAreaDoor.OpenDoor();
+    }
 }
