@@ -28,8 +28,6 @@ public class CameraController : MonoBehaviour
         zoom = minMaxZoom.y;
     }
 
-
-
     public void ToggleOverviewMode(bool toggle)
     {
         if (toggle)

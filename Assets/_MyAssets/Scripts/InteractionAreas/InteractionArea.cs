@@ -28,27 +28,17 @@ public class InteractionArea : MonoBehaviour
         }
     }
 
-    public void SelectArea()
-    {
-        selectionRend.enabled = true;
-        selectionRend.color = Color.green;
-    }
-
-    public void DeselectArea()
-    {
-        selectionRend.enabled = false;
-    }
-
     public virtual void ToggleArea(bool toggle)
     {
         canvasObject.SetActive(toggle);
         if (toggle)
         {
-            SelectArea();
+            selectionRend.enabled = true;
+            selectionRend.color = Color.green;
         }
         else
         {
-            DeselectArea();
+            selectionRend.enabled = false;
         }
     }
 }

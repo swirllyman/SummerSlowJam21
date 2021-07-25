@@ -3493,6 +3493,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Customizer Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 387551818524765810, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 396314985306070162, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
       propertyPath: m_Name
       value: OutlineRend

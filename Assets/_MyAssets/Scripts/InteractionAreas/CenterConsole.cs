@@ -45,27 +45,30 @@ public class CenterConsole : InteractionArea
 
     public void UpdateCenterConsoleText()
     {
-        int readyPlayers = 0;
-
-        foreach (Player p in PhotonNetwork.PlayerList)
+        if (!PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("GameActive") || !(bool)PhotonNetwork.CurrentRoom.CustomProperties["GameActive"])
         {
-            if (p.CustomProperties.ContainsKey("Ready"))
+            int readyPlayers = 0;
+
+            foreach (Player p in PhotonNetwork.PlayerList)
             {
-                bool playerReady = (bool)p.CustomProperties["Ready"];
-                if (playerReady)
-                    readyPlayers++;
+                if (p.CustomProperties.ContainsKey("Ready"))
+                {
+                    bool playerReady = (bool)p.CustomProperties["Ready"];
+                    if (playerReady)
+                        readyPlayers++;
+                }
             }
-        }
 
-        centerConsoleText.text = "Waiting for (" + (PhotonNetwork.CurrentRoom.PlayerCount - readyPlayers) + ") Players";
+            centerConsoleText.text = "Waiting for (" + (PhotonNetwork.CurrentRoom.PlayerCount - readyPlayers) + ") Players";
 
-        if(readyPlayers == PhotonNetwork.CurrentRoom.PlayerCount)
-        {
-            if (NetworkManager.singleton.photonView.IsMine)
+            if (readyPlayers == PhotonNetwork.CurrentRoom.PlayerCount)
             {
-                NetworkManager.singleton.photonView.RPC(nameof(NetworkManager.StartGame_RPC), RpcTarget.All);
-                Hashtable activeState = new Hashtable() { ["GameActive"] = true };
-                PhotonNetwork.CurrentRoom.SetCustomProperties(activeState);
+                if (NetworkManager.singleton.photonView.IsMine)
+                {
+                    NetworkManager.singleton.photonView.RPC(nameof(NetworkManager.StartGame_RPC), RpcTarget.All);
+                    Hashtable activeState = new Hashtable() { ["GameActive"] = true };
+                    PhotonNetwork.CurrentRoom.SetCustomProperties(activeState);
+                }
             }
         }
     }

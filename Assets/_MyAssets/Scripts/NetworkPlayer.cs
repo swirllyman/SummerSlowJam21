@@ -11,6 +11,9 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     public SpriteRenderer myRend;
     public TMP_Text playerNameText;
     internal int photonPlayerID = -1;
+    internal bool narrator = false;
+    internal bool usingMap = false;
+
     Rigidbody2D myBody;
 
     public delegate void PlayerPropertiesUpdatedCallback();
@@ -18,6 +21,7 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
+        narrator = true;
         photonPlayerID = photonView.Owner.ActorNumber;
         myBody = GetComponent<Rigidbody2D>();
 

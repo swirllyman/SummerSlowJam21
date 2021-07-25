@@ -12,10 +12,12 @@ public class MapView : InteractionArea
 
         if (toggle)
         {
+            NetworkPlayer.LocalPlayer.usingMap = true;
             GameManager.singleton.camController.SetTarget(transform);
         }
         else
         {
+            NetworkPlayer.LocalPlayer.usingMap = false;
             GameManager.singleton.camController.SetTarget(NetworkPlayer.LocalPlayer.transform);
         }
 
