@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public Notification notification;
     public Selector selector;
     public RoomManager roomManager;
+    public Transform playerListTransform;
 
     public TMP_Text currentGoldText;
     public TMP_Text bankedGoldText;

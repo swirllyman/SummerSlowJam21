@@ -9,7 +9,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 {
     public static NetworkManager singleton;
     public GameObject playerPrefab;
-    public Recorder primaryRecorder;
     public Transform startTransform;
     public Transform holdingArea;
     public GameObject titleScreenGameObject;
@@ -68,7 +67,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     IEnumerator DisconnectRoutine()
     {
-        primaryRecorder.StopRecording();
         yield return new WaitForSeconds(.5f);
         titleScreenGameObject.SetActive(true);
     }
@@ -80,8 +78,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
         if (playerPrefab != null && NetworkPlayer.LocalPlayer == null)
         {
-            PhotonNetwork.Instantiate(this.playerPrefab.name, startTransform.position, Quaternion.identity, 0);
-            primaryRecorder.StartRecording();
+            PhotonNetwork.Instantiate(playerPrefab.name, startTransform.position, Quaternion.identity, 0);
             Customizer.singleton.UpdateAvailableColors();
         }
     }
@@ -123,6 +120,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         StartCoroutine(StartGameRoutine());
 
+
         if (photonView.IsMine)
         {
             NetworkPlayer[] allPlayers = FindObjectsOfType<NetworkPlayer>();
@@ -138,6 +136,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             GameManager.singleton.notification.PlayNotification("Game Starting: " + i);
             yield return new WaitForSeconds(1.0f);
         }
+
         initialAreaDoor.OpenDoor();
 
         if (PhotonNetwork.PlayerListOthers.Length <= 0) 

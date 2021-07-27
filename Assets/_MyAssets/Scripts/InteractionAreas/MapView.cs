@@ -16,7 +16,7 @@ public class MapView : InteractionArea
         if (toggle)
         {
             NetworkPlayer.LocalPlayer.usingMap = true;
-            GameManager.singleton.camController.SetTarget(transform);
+            GameManager.singleton.camController.SetTarget(GameManager.singleton.roomManager.routes[0].routeTransform);
         }
         else
         {

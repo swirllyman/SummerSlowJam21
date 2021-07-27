@@ -36,7 +36,7 @@ public class Selector : MonoBehaviour
         if (tutorial != null)
         {
             tutorial.SetActive(false);
-            LeanTween.moveLocalY(tutorialArrow, -65, 2.0f).setLoopPingPong();
+            LeanTween.moveLocalY(tutorialArrow, 125, 1.0f).setLoopPingPong().setEaseInBounce();
         }
     }
 
@@ -61,7 +61,8 @@ public class Selector : MonoBehaviour
 
                 if (hoveredRoom != null)
                 {
-                    SelectRoom();
+                    if(!hoveredRoom.roomStarted)
+                        SelectRoom();
                 }
 
                 if(hoveredTask == null && hoveredRoom == null && selectedRoom != null)
@@ -101,12 +102,13 @@ public class Selector : MonoBehaviour
         selectedRoom.selectionRend.enabled = false;
         selectedRoom = null;
 
-        GameManager.singleton.camController.SetTarget(GameManager.singleton.mapView.transform);
+        GameManager.singleton.camController.SetTarget(GameManager.singleton.roomManager.routes[0].routeTransform);
         GameManager.singleton.camController.ToggleOverviewMode(true);
     }
 
     void SelectTask()
     {
+        if (hoveredRoom != null && hoveredRoom.roomStarted) return;
         if (selectedTask != null)
         {
             selectedTask.ToggleHover(false);
@@ -187,7 +189,7 @@ public class Selector : MonoBehaviour
 
                             hoveredRoom.ShowAllRoomTasks();
                             hoveredRoom.selectionRend.enabled = true;
-                            hoveredRoom.selectionRend.color = hoveredRoom.hoverColor;
+                            hoveredRoom.selectionRend.color = hoveredRoom.roomStarted ? Color.red : hoveredRoom.hoverColor;
                         }
                     }
                     break;
@@ -271,5 +273,7 @@ public class Selector : MonoBehaviour
             hoveredTask.ToggleHover(false);
             hoveredTask = null;
         }
+
+        tutorial.SetActive(false);
     }
 }

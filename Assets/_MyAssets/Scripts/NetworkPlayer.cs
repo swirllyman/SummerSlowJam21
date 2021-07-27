@@ -7,19 +7,29 @@ using UnityEngine;
 public class NetworkPlayer : MonoBehaviourPunCallbacks
 {
     public static NetworkPlayer LocalPlayer;
+    public GameObject coinPrefab;
     public GameObject deathEffectPrefab;
+    public GameObject playerSlotPrefab;
     public Collider2D myCollider;
     public SpriteRenderer myRend;
     public TMP_Text playerNameText;
+    public Sprite idleSprite;
+    public Sprite[] walkingSprites;
+
     internal int photonPlayerID = -1;
     internal bool narrator = false;
     internal bool usingMap = false;
     internal bool dead = false;
 
+    PlayerSlot myPlayerSlot;
+    bool right = true;
+    bool walking = false;
     int currentGold = 0;
     int bankedGold = 0;
 
     Rigidbody2D myBody;
+
+    Coroutine walkRoutine;
 
     public delegate void PlayerPropertiesUpdatedCallback();
     public event PlayerPropertiesUpdatedCallback onPlayerPropertiesUpdated;
@@ -28,13 +38,14 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     {
         photonPlayerID = photonView.Owner.ActorNumber;
         myBody = GetComponent<Rigidbody2D>();
+        myPlayerSlot = Instantiate(playerSlotPrefab, GameManager.singleton.playerListTransform).GetComponent<PlayerSlot>();
 
         if (photonView.IsMine)
         {
             LocalPlayer = this;
             GameManager.singleton.camController.SetTarget(transform);
             LocalPlayerSetColor(Customizer.singleton.GetRandomAvailableColor());
-            LocalPlayerSetName("No Name Set");
+            LocalPlayerSetName(RandomNameGenerator.GetRandomName(1));
 
             onPlayerPropertiesUpdated += GameManager.singleton.centerConsole.UpdateCenterConsoleText;
         }
@@ -47,6 +58,11 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
                 myRend.color = Customizer.playerColors[newColorID];
             }
         }
+
+        myPlayerSlot.nameText.text = playerNameText.text;
+        myPlayerSlot.bgImage.color = myRend.color;
+        myPlayerSlot.bankedGoldText.text = "0";
+        myPlayerSlot.currentGoldText.text = "0";
     }
 
     // Update is called once per frame
@@ -54,7 +70,47 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     {
         if (!photonView.IsMine) return;
 
+        if (Input.GetKeyDown(KeyCode.D) &! right)
+        {
+            right = true;
+            myRend.flipX = false;
+            photonView.RPC(nameof(FlipVisuals_RPC), RpcTarget.Others, true);
+        }
+
+        if(Input.GetKeyDown(KeyCode.A) && right)
+        {
+            right = false;
+            myRend.flipX = true;
+            photonView.RPC(nameof(FlipVisuals_RPC), RpcTarget.Others, false);
+        }
+
         myBody.velocity = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+
+        if(Input.GetAxis("Horizontal") != 0.0f || Input.GetAxis("Vertical") != 0.0f)
+        {
+            if (!walking)
+            {
+                photonView.RPC(nameof(SetWalking_RPC), RpcTarget.All, true);
+            }
+        }
+        else
+        {
+            if (walking)
+            {
+                photonView.RPC(nameof(SetWalking_RPC), RpcTarget.All, false);
+            }
+        }
+    }
+
+    System.Collections.IEnumerator WalkRoutine()
+    {
+        while (true)
+        {
+            myRend.sprite = walkingSprites[0];
+            yield return new WaitForSeconds(.1f);
+            myRend.sprite = walkingSprites[1];
+            yield return new WaitForSeconds(.1f);
+        }
     }
 
     //override void Prop
@@ -67,6 +123,8 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
             int newColorID = (int)changedProps["ColorID"];
             myRend.color = Customizer.playerColors[newColorID];
             Customizer.singleton.UpdateAvailableColors();
+            if(myPlayerSlot != null)
+                myPlayerSlot.bgImage.color = myRend.color;
         }
 
         onPlayerPropertiesUpdated?.Invoke();
@@ -87,6 +145,7 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     public void LocalPlayerSetName(string newName)
     {
         PhotonNetwork.LocalPlayer.NickName = newName;
+        GameManager.singleton.notification.PlayNotification("Name Set: " + newName);
         photonView.RPC(nameof(SetPlayerName_RPC), RpcTarget.All, newName);
     }
 
@@ -99,11 +158,34 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
+    void SetWalking_RPC(bool isWalking)
+    {
+        walking = isWalking;
+        if (isWalking)
+        {
+            if (walkRoutine != null) StopCoroutine(walkRoutine);
+            walkRoutine = StartCoroutine(WalkRoutine());
+        }
+        else
+        {
+            if (walkRoutine != null) StopCoroutine(walkRoutine);
+            myRend.sprite = idleSprite;
+        }
+    }
+
+    [PunRPC]
+    void FlipVisuals_RPC(bool isRight)
+    {
+        right = isRight;
+        myRend.flipX = !right;
+    }
+
+    [PunRPC]
     void FinishRoute_RPC()
     {
         bankedGold += currentGold;
         currentGold = 0;
-
+        myPlayerSlot.bankedGoldText.text = "" + bankedGold;
         if (photonView.IsMine)
         {
             GameManager.singleton.currentGoldText.text = "Current Gold: " + currentGold;
@@ -115,6 +197,8 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     void SetPlayerName_RPC(string newName)
     {
         playerNameText.text = newName;
+        if(myPlayerSlot != null)
+            myPlayerSlot.nameText.text = playerNameText.text;
     }
 
     [PunRPC]
@@ -185,7 +269,7 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     [PunRPC]
     public void Revive_RPC()
     {
-        dead = true;
+        dead = false;
         if (photonView.IsMine)
         {
             myRend.color = new Color(myRend.color.r, myRend.color.g, myRend.color.b, 1.0f);
@@ -219,6 +303,12 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     public void AddGold_RPC(int goldToAdd)
     {
         currentGold += goldToAdd;
+        GameObject coinObject = Instantiate(coinPrefab, transform.position, Quaternion.identity);
+
+        LeanTween.moveLocalY(coinObject, coinObject.transform.localPosition.y + .15f, 1.0f).setEaseInOutExpo();
+        coinObject.GetComponent<Coin>().SetValue(goldToAdd);
+
+        myPlayerSlot.currentGoldText.text = ""+currentGold;
 
         if (photonView.IsMine)
         {

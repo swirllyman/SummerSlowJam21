@@ -73,7 +73,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 891601cf747e72b4d95f7e5b73f70e0d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -132,10 +132,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 971cc4c258af66b4dac37a39189191c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  coinPrefab: {fileID: 8591800507506595763, guid: f31759c7eeb34f546b05d8f39db7bd15, type: 3}
   deathEffectPrefab: {fileID: 155596431680256854, guid: e08202fff78f70e47a40debe4c4ea0ac, type: 3}
+  playerSlotPrefab: {fileID: 8053204580373046332, guid: 12db51a94cb1b1c46b773099f3005d2b, type: 3}
   myCollider: {fileID: 4101148227661460857}
   myRend: {fileID: 2341579252441512078}
   playerNameText: {fileID: 3717819555209980874}
+  idleSprite: {fileID: 21300000, guid: 891601cf747e72b4d95f7e5b73f70e0d, type: 3}
+  walkingSprites:
+  - {fileID: 21300000, guid: 8529f5f80b3aec64caa79f55cb3198d7, type: 3}
+  - {fileID: 21300000, guid: 891601cf747e72b4d95f7e5b73f70e0d, type: 3}
 --- !u!114 &6821398545307548627
 MonoBehaviour:
   m_ObjectHideFlags: 0

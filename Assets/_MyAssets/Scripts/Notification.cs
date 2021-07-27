@@ -23,7 +23,7 @@ public class Notification : MonoBehaviour
         notificationText.text = newNotification;
         notificationText.transform.localScale = Vector3.zero;
         LeanTween.value(notificationText.gameObject, TextColorUpdateCallback, fadeColor, startColor, 0.0f);
-        LeanTween.scale(notificationText.rectTransform, Vector3.one, .25f);
+        LeanTween.scale(notificationText.rectTransform, Vector3.one, .15f);
 
         if (notificationRoutine != null)
         {
