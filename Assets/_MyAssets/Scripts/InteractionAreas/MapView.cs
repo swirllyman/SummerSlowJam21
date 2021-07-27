@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class MapView : InteractionArea
 {
+    internal bool inUse = false;
+    internal bool tutorialized = false;
+
     public override void ToggleArea(bool toggle)
     {
         base.ToggleArea(toggle);
 
         if (NetworkPlayer.LocalPlayer == null) return;
-
+        inUse = toggle;
         if (toggle)
         {
             NetworkPlayer.LocalPlayer.usingMap = true;
@@ -18,6 +21,7 @@ public class MapView : InteractionArea
         else
         {
             NetworkPlayer.LocalPlayer.usingMap = false;
+            GameManager.singleton.selector.HideAll();
             GameManager.singleton.camController.SetTarget(NetworkPlayer.LocalPlayer.transform);
         }
 

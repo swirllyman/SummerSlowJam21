@@ -151,7 +151,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1308202649781701788
 RectTransform:
   m_ObjectHideFlags: 0
@@ -230,9 +230,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectionRend: {fileID: 126128882517557250}
   canvasObject: {fileID: 7451656714693529290}
-  taskName: Task #1
+  taskID: 0
+  room: {fileID: 0}
   selectionSprite: {fileID: 21300000, guid: ff6dae7680895824c9cfd587faeb3297, type: 3}
   standardSprite: {fileID: 21300000, guid: 647b86ab425420b47812e22c995c3eee, type: 3}
+  myCollider: {fileID: 9018764936927648172}
 --- !u!1 &4625422725284792472
 GameObject:
   m_ObjectHideFlags: 0
@@ -298,7 +300,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Task \nArea"
+  m_text: "Switch \nArea"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -390,6 +392,10 @@ PrefabInstance:
       propertyPath: m_text
       value: Task #1
       objectReference: {fileID: 0}
+    - target: {fileID: 3795270458874135685, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 87e6309231bab3f42bd63ec006c5de15, type: 3}
     - target: {fileID: 4686609757182219079, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -438,6 +444,26 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5960548635214377340, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_Radius
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6477978963912032858, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6477978963912032858, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6477978963912032858, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711398828475818291, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3262673669959533140, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
@@ -449,6 +475,11 @@ GameObject:
 --- !u!4 &7970007070651956119 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4686609757182219079, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+  m_PrefabInstance: {fileID: 3427531281833289936}
+  m_PrefabAsset: {fileID: 0}
+--- !u!58 &9018764936927648172 stripped
+CircleCollider2D:
+  m_CorrespondingSourceObject: {fileID: 5960548635214377340, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
   m_PrefabInstance: {fileID: 3427531281833289936}
   m_PrefabAsset: {fileID: 0}
 --- !u!212 &126128882517557250 stripped

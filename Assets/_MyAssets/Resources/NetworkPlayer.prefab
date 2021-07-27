@@ -132,6 +132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 971cc4c258af66b4dac37a39189191c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deathEffectPrefab: {fileID: 155596431680256854, guid: e08202fff78f70e47a40debe4c4ea0ac, type: 3}
   myCollider: {fileID: 4101148227661460857}
   myRend: {fileID: 2341579252441512078}
   playerNameText: {fileID: 3717819555209980874}

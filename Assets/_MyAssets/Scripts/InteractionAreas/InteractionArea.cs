@@ -10,6 +10,7 @@ public class InteractionArea : MonoBehaviour
     public virtual void Start()
     {
         ToggleArea(false);
+        selectionRend.enabled = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -33,12 +34,12 @@ public class InteractionArea : MonoBehaviour
         canvasObject.SetActive(toggle);
         if (toggle)
         {
-            selectionRend.enabled = true;
-            selectionRend.color = Color.green;
+            //selectionRend.enabled = true;
+            //selectionRend.color = Color.green;
         }
         else
         {
-            selectionRend.enabled = false;
+            //selectionRend.enabled = false;
         }
     }
 }

@@ -14,6 +14,9 @@ public class Selector : MonoBehaviour
     public Button safeButton;
     public Button sabotagebutton;
 
+    public GameObject tutorial;
+    public GameObject tutorialArrow;
+
     Camera myCam;
     Vector3 mousePos;
     RaycastHit2D hit;
@@ -29,6 +32,12 @@ public class Selector : MonoBehaviour
         myCam = GetComponent<Camera>();
         hit = new RaycastHit2D();
         taskUI.SetActive(false);
+
+        if (tutorial != null)
+        {
+            tutorial.SetActive(false);
+            LeanTween.moveLocalY(tutorialArrow, -65, 2.0f).setLoopPingPong();
+        }
     }
 
     // Update is called once per frame
@@ -74,7 +83,16 @@ public class Selector : MonoBehaviour
         selectedRoom = hoveredRoom;
         selectedRoom.ShowAllRoomTasks();
         selectedRoom.selectionRend.enabled = true;
-        selectedRoom.selectionRend.color = Color.green;
+        selectedRoom.selectionRend.color = selectedRoom.selectionColor;
+
+        GameManager.singleton.camController.SetTarget(selectedRoom.selectionRend.transform);
+        GameManager.singleton.camController.ToggleOverviewMode(true, 1.5f);
+
+        if (tutorial != null)
+        {
+            tutorial.SetActive(false);
+            GameManager.singleton.mapView.tutorialized = true;
+        }
     }
 
     void DeselectRoom()
@@ -82,6 +100,9 @@ public class Selector : MonoBehaviour
         selectedRoom.HideAllRoomTasks();
         selectedRoom.selectionRend.enabled = false;
         selectedRoom = null;
+
+        GameManager.singleton.camController.SetTarget(GameManager.singleton.mapView.transform);
+        GameManager.singleton.camController.ToggleOverviewMode(true);
     }
 
     void SelectTask()
@@ -95,7 +116,7 @@ public class Selector : MonoBehaviour
 
         selectedTask = hoveredTask;
         selectedTask.ToggleSelect(true);
-        taskUIName.text = selectedTask.taskName;
+        taskUIName.text = "Task " + selectedTask.taskID + "-" + selectedTask.room.roomNum;
 
         UpdateButtons();
         taskUI.SetActive(true);
@@ -145,6 +166,16 @@ public class Selector : MonoBehaviour
 
                     if (hoveredRoom != hitRoom)
                     {
+                        if (hoveredRoom != null)
+                        {
+                            if (hoveredRoom != selectedRoom)
+                            {
+                                hoveredRoom.HideAllRoomTasks();
+                                hoveredRoom.selectionRend.enabled = false;
+                            }
+                            hoveredRoom = null;
+                        }
+
                         hoveredRoom = hitRoom;
                         if (hoveredRoom != null && hitRoom != selectedRoom)
                         {
@@ -156,7 +187,7 @@ public class Selector : MonoBehaviour
 
                             hoveredRoom.ShowAllRoomTasks();
                             hoveredRoom.selectionRend.enabled = true;
-                            hoveredRoom.selectionRend.color = Color.yellow;
+                            hoveredRoom.selectionRend.color = hoveredRoom.hoverColor;
                         }
                     }
                     break;
@@ -185,14 +216,21 @@ public class Selector : MonoBehaviour
 
     public void SetTaskSabotaged()
     {
-        if (selectedTask != null) selectedTask.sabotaged = true;
+        GameManager.singleton.roomManager.photonView.RPC(nameof(RoomManager.SetSwitch), Photon.Pun.RpcTarget.All, selectedTask.room.routeNum, selectedTask.room.roomNum, selectedTask.taskID - 1, true);
+        //if (selectedTask != null) selectedTask.sabotaged = true;
         UpdateButtons();
     }
 
     public void SetTaskSafe()
     {
-        if (selectedTask != null) selectedTask.sabotaged = false;
+        GameManager.singleton.roomManager.photonView.RPC(nameof(RoomManager.SetSwitch), Photon.Pun.RpcTarget.All, selectedTask.room.routeNum, selectedTask.room.roomNum, selectedTask.taskID - 1, false);
+        //if (selectedTask != null) selectedTask.sabotaged = false;
         UpdateButtons();
+    }
+
+    public void HighlightTask()
+    {
+        GameManager.singleton.roomManager.photonView.RPC(nameof(RoomManager.SetTaskHighlight), Photon.Pun.RpcTarget.All, selectedTask.room.routeNum, selectedTask.room.roomNum, selectedTask.taskID - 1);
     }
 
     void UpdateButtons()
@@ -207,6 +245,31 @@ public class Selector : MonoBehaviour
         else
         {
             selectedTask.selectionRend.color = Color.green;
+        }
+    }
+
+    public void HideAll()
+    {
+        if (selectedTask != null)
+        {
+            DeselectTask();
+        }
+        if (selectedRoom != null)
+        {
+            DeselectRoom();
+        }
+
+        if (hoveredRoom != null)
+        {
+            hoveredRoom.selectionRend.enabled = false;
+            hoveredRoom.HideAllRoomTasks();
+            hoveredRoom = null;
+        }
+
+        if (hoveredTask != null)
+        {
+            hoveredTask.ToggleHover(false);
+            hoveredTask = null;
         }
     }
 }

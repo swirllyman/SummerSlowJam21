@@ -65,6 +65,7 @@ public class CenterConsole : InteractionArea
             {
                 if (NetworkManager.singleton.photonView.IsMine)
                 {
+                    PhotonNetwork.CurrentRoom.IsOpen = false;
                     NetworkManager.singleton.photonView.RPC(nameof(NetworkManager.StartGame_RPC), RpcTarget.All);
                     Hashtable activeState = new Hashtable() { ["GameActive"] = true };
                     PhotonNetwork.CurrentRoom.SetCustomProperties(activeState);

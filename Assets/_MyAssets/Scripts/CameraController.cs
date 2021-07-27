@@ -12,9 +12,9 @@ public class CameraController : MonoBehaviour
     public float zoomSpeed = 5.0f;
     public float scrollFactor = .15f;
 
+    internal float zoom = 10;
 
     float prevZoom = 10;
-    float zoom = 10;
     bool dragging = false;
 
     Transform target;
@@ -28,12 +28,12 @@ public class CameraController : MonoBehaviour
         zoom = minMaxZoom.y;
     }
 
-    public void ToggleOverviewMode(bool toggle)
+    public void ToggleOverviewMode(bool toggle, float zoomMultiplier = 2.0f)
     {
         if (toggle)
         {
             prevZoom = zoom;
-            zoom = minMaxZoom.y * 2;
+            zoom = minMaxZoom.y * zoomMultiplier;
         }
         else
         {
@@ -50,15 +50,17 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-
-        if (Input.GetAxis("Mouse ScrollWheel") > 0 && zoom > minMaxZoom.x)
+        if (!GameManager.singleton.mapView.inUse)
         {
-            zoom -= scrollFactor;
-        }
+            if (Input.GetAxis("Mouse ScrollWheel") > 0 && zoom > minMaxZoom.x)
+            {
+                zoom -= scrollFactor;
+            }
 
-        if (Input.GetAxis("Mouse ScrollWheel") < 0 && zoom < minMaxZoom.y)
-        {
-            zoom += scrollFactor;
+            if (Input.GetAxis("Mouse ScrollWheel") < 0 && zoom < minMaxZoom.y)
+            {
+                zoom += scrollFactor;
+            }
         }
 
         Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, zoom, Time.deltaTime * zoomSpeed);
@@ -69,6 +71,7 @@ public class CameraController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (target != null) return;
         if(transform.position.x < boundsX.x)
         {
             transform.position = new Vector3(boundsX.x, transform.position.y, transform.position.z);

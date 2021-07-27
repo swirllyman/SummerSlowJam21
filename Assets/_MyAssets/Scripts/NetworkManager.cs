@@ -12,12 +12,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public Recorder primaryRecorder;
     public Transform startTransform;
     public Transform holdingArea;
-    public GameObject connectOnlineButton;
+    public GameObject titleScreenGameObject;
     public DoorObject holdingAreaDoor;
     public DoorObject initialAreaDoor;
 
     //[SerializeField]
-    private byte maxPlayersPerRoom = 15;
+    private byte maxPlayersPerRoom = 4;
 
     public delegate void PlayerCountUpdatedCallback();
     public event PlayerCountUpdatedCallback onPlayerCountUpdated;
@@ -27,7 +27,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         singleton = this;
 
         PhotonNetwork.AutomaticallySyncScene = true;
-        connectOnlineButton.SetActive(true);
+        titleScreenGameObject.SetActive(true);
     }
 
     [ContextMenu("Force Connect")]
@@ -36,7 +36,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsConnected)
         {
             // #Critical we need at this point to attempt joining a Random Room. If it fails, we'll get notified in OnJoinRandomFailed() and we'll create one.
-            PhotonNetwork.JoinRandomRoom();
+            ExitGames.Client.Photon.Hashtable openRoom = new ExitGames.Client.Photon.Hashtable() { ["GameActive"] = false };
+            PhotonNetwork.JoinRandomRoom(openRoom, maxPlayersPerRoom);
         }
         else
         {
@@ -69,13 +70,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         primaryRecorder.StopRecording();
         yield return new WaitForSeconds(.5f);
-        connectOnlineButton.SetActive(true);
+        titleScreenGameObject.SetActive(true);
     }
 
     public override void OnJoinedRoom()
     {
         Debug.Log("Joined Room -- PUN");
-        connectOnlineButton.SetActive(false);
+        titleScreenGameObject.SetActive(false);
 
         if (playerPrefab != null && NetworkPlayer.LocalPlayer == null)
         {
@@ -106,20 +107,42 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     #endregion
 
     [PunRPC]
+    public void RouteFailed_RPC()
+    {
+        StartCoroutine(ResetAfterFailure());
+    }
+
+    IEnumerator ResetAfterFailure()
+    {
+        yield return new WaitForSeconds(2.0f);
+        GameManager.singleton.roomManager.RouteFinished();
+    }
+
+    [PunRPC]
     public void StartGame_RPC()
     {
-        NetworkPlayer.LocalPlayer.transform.position = holdingArea.position;
         StartCoroutine(StartGameRoutine());
+
+        if (photonView.IsMine)
+        {
+            NetworkPlayer[] allPlayers = FindObjectsOfType<NetworkPlayer>();
+            allPlayers[Random.Range(0, allPlayers.Length)].photonView.RPC(nameof(NetworkPlayer.SetNarrator_RPC), RpcTarget.All);
+        }
     }
 
     IEnumerator StartGameRoutine()
     {
-        for (int i = 10; i > 0; i--)
+        yield return new WaitForSeconds(2.0f);
+        for (int i = 5; i > 0; i--)
         {
             GameManager.singleton.notification.PlayNotification("Game Starting: " + i);
             yield return new WaitForSeconds(1.0f);
         }
-        holdingAreaDoor.OpenDoor();
         initialAreaDoor.OpenDoor();
+
+        if (PhotonNetwork.PlayerListOthers.Length <= 0) 
+        {
+            holdingAreaDoor.OpenDoor();
+        }
     }
 }
