@@ -48,8 +48,11 @@ public class RoomManager : MonoBehaviourPun
         if (allSabotaged)
         {
             GameManager.singleton.notification.PlayNotification("Can't Sabotage All Tasks");
-            routes[route].rooms[room].allTasks[0].sabotaged = false;
-            routes[route].rooms[room].allTasks[0].selectionRend.color = Color.green;
+
+            int nextSwitchID = (switchID + 1) % 2;
+
+            routes[route].rooms[room].allTasks[nextSwitchID].sabotaged = false;
+            routes[route].rooms[room].allTasks[nextSwitchID].selectionRend.color = Color.green;
         }
     }
 
@@ -58,6 +61,7 @@ public class RoomManager : MonoBehaviourPun
     {
         if (routes[route].rooms[roomNum].doorToNextRoom != null)
         {
+            routes[route].rooms[roomNum + 1].roomStarted = true;
             routes[route].rooms[roomNum].OpenDoor();
         }
         else
@@ -107,5 +111,6 @@ public class RoomManager : MonoBehaviourPun
 public struct Routes
 {
     public string routeName;
+    public Transform routeTransform;
     public Room[] rooms;
 }

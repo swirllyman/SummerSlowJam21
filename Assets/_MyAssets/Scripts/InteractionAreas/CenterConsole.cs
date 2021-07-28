@@ -47,6 +47,31 @@ public class CenterConsole : InteractionArea
     {
         if (!PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("GameActive") || !(bool)PhotonNetwork.CurrentRoom.CustomProperties["GameActive"])
         {
+
+            if(PhotonNetwork.PlayerList.Length < 2)
+            {
+                centerConsoleText.text = "Waiting For More Players. (Required at least 2)";
+                readyButton.SetActive(false);
+                return;
+            }
+            else
+            {
+                bool playerReady = false;
+                if(PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("Ready"))
+                {
+                    bool isPlayerReady = (bool)PhotonNetwork.LocalPlayer.CustomProperties["Ready"];
+                    if (!isPlayerReady)
+                    {
+                        playerReady = true;
+                    }
+                }
+
+                if (!playerReady)
+                {
+                    readyButton.SetActive(true);
+                }
+            }
+
             int readyPlayers = 0;
 
             foreach (Player p in PhotonNetwork.PlayerList)

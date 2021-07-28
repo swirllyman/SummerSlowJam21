@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Ready
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fe7e97b60b628884fa41476cd93be4dd, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 336a1572dbfb6a04980b97cf82d7929a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -468,8 +468,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Waiting On (X) Players
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fe7e97b60b628884fa41476cd93be4dd, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 336a1572dbfb6a04980b97cf82d7929a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -776,8 +776,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Game in Progress
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fe7e97b60b628884fa41476cd93be4dd, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 336a1572dbfb6a04980b97cf82d7929a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -840,7 +840,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1001 &8259304224077482
@@ -862,6 +862,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: OutlineRend
       objectReference: {fileID: 0}
+    - target: {fileID: 2744870005058980669, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: fe7e97b60b628884fa41476cd93be4dd, type: 2}
+    - target: {fileID: 2744870005058980669, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: 336a1572dbfb6a04980b97cf82d7929a, type: 2}
     - target: {fileID: 4686609757182219079, guid: e3228ecd4fc3d2a4a98c3c127c67e01e, type: 3}
       propertyPath: m_RootOrder
       value: 0

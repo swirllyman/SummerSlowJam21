@@ -12,6 +12,8 @@ public class Room : MonoBehaviour
     public Task[] allTasks;
     public DoorObject doorToNextRoom;
 
+    internal bool roomStarted = false;
+
     private void Awake()
     {
         selectionRend.enabled = false;
@@ -52,6 +54,7 @@ public class Room : MonoBehaviour
 
     public void ResetRoom()
     {
+        roomStarted = false;
         if (doorToNextRoom != null)
         {
             doorToNextRoom.CloseDoor();
