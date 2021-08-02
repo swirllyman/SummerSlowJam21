@@ -10,6 +10,8 @@ public class CenterConsole : InteractionArea
     public GameObject readyButton;
     public GameObject[] uiPanels;
 
+    public int playersRequiredToStart = 2;
+
     public override void Start()
     {
         NetworkManager.singleton.onPlayerCountUpdated += UpdateCenterConsoleText;
@@ -48,7 +50,7 @@ public class CenterConsole : InteractionArea
         if (!PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("GameActive") || !(bool)PhotonNetwork.CurrentRoom.CustomProperties["GameActive"])
         {
 
-            if(PhotonNetwork.PlayerList.Length < 2)
+            if(PhotonNetwork.PlayerList.Length < playersRequiredToStart)
             {
                 centerConsoleText.text = "Waiting For More Players. (Required at least 2)";
                 readyButton.SetActive(false);
@@ -91,7 +93,7 @@ public class CenterConsole : InteractionArea
                 if (NetworkManager.singleton.photonView.IsMine)
                 {
                     PhotonNetwork.CurrentRoom.IsOpen = false;
-                    NetworkManager.singleton.photonView.RPC(nameof(NetworkManager.StartGame_RPC), RpcTarget.All);
+                    GameManager.singleton.roomManager.photonView.RPC(nameof(RoomManager.StartGame_RPC), RpcTarget.All);
                     Hashtable activeState = new Hashtable() { ["GameActive"] = true };
                     PhotonNetwork.CurrentRoom.SetCustomProperties(activeState);
                 }

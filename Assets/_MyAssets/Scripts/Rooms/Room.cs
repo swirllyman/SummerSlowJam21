@@ -18,7 +18,6 @@ public class Room : MonoBehaviour
     {
         selectionRend.enabled = false;
     }
-
     public void ShowAllRoomTasks()
     {
         foreach(Task t in allTasks)
@@ -61,7 +60,16 @@ public class Room : MonoBehaviour
         }
         foreach (Task t in allTasks)
         {
+            t.sabotaged = false;
             t.myCollider.enabled = true;
+        }
+    }
+
+    public void ToggleAllTasks(bool toggle)
+    {
+        foreach (Task t in allTasks)
+        {
+            t.myCollider.enabled = toggle;
         }
     }
 }

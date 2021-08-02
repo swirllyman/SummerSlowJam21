@@ -22,10 +22,20 @@ public class CameraController : MonoBehaviour
     Vector3 prev;
     Vector3 vel;
 
+    public float idleSpeed = .1f;
+    public float moveTime = 3.0f;
+    public float minMoveDistance = .5f;
+
+    float currentMoveTimer = 0.0f;
+    bool idle = true;
+    Vector3 idleDestination;
+
     private void Start()
     {
         Camera.main.orthographicSize = minMaxZoom.y;
         zoom = minMaxZoom.y;
+
+        idleDestination = GetRandomIdleDestination();
     }
 
     public void ToggleOverviewMode(bool toggle, float zoomMultiplier = 2.0f)
@@ -43,13 +53,38 @@ public class CameraController : MonoBehaviour
 
     public void SetTarget(Transform newTarget)
     {
+        idle = false;
         target = newTarget;
         if(target != null)
             zoom = (minMaxZoom.x + minMaxZoom.y) / 2;
     }
 
+    Vector3 GetRandomIdleDestination()
+    {
+        Vector3 newDestination = new Vector3(Random.Range(boundsX.x, boundsX.y), Random.Range(boundsY.x, boundsY.y), -10.0f);
+
+        while(Vector3.Distance(idleDestination, newDestination) < minMoveDistance)
+        {
+            newDestination = new Vector3(Random.Range(boundsX.x, boundsX.y), Random.Range(boundsY.x, boundsY.y), -10.0f);
+        }
+
+        return newDestination;
+    }
+
     void Update()
     {
+        if (idle)
+        {
+            currentMoveTimer += Time.deltaTime;
+            if (currentMoveTimer >= moveTime)
+            {
+                idleDestination = GetRandomIdleDestination();
+                currentMoveTimer = 0.0f;
+            }
+
+            transform.position += (idleDestination - transform.position).normalized * idleSpeed * Time.deltaTime;
+            return;
+        }
         if (!GameManager.singleton.mapView.inUse)
         {
             if (Input.GetAxis("Mouse ScrollWheel") > 0 && zoom > minMaxZoom.x)

@@ -17,12 +17,13 @@ public class Selector : MonoBehaviour
     public GameObject tutorial;
     public GameObject tutorialArrow;
 
+    internal Task selectedTask;
+
     Camera myCam;
     Vector3 mousePos;
     RaycastHit2D hit;
 
     Task hoveredTask;
-    Task selectedTask;
 
     Room hoveredRoom;
     Room selectedRoom;
@@ -61,8 +62,7 @@ public class Selector : MonoBehaviour
 
                 if (hoveredRoom != null)
                 {
-                    if(!hoveredRoom.roomStarted)
-                        SelectRoom();
+                    SelectRoom();
                 }
 
                 if(hoveredTask == null && hoveredRoom == null && selectedRoom != null)
@@ -77,12 +77,10 @@ public class Selector : MonoBehaviour
     {
         if(selectedRoom != null)
         {
-            selectedRoom.HideAllRoomTasks();
             selectedRoom.selectionRend.enabled = false;
         }
 
         selectedRoom = hoveredRoom;
-        selectedRoom.ShowAllRoomTasks();
         selectedRoom.selectionRend.enabled = true;
         selectedRoom.selectionRend.color = selectedRoom.selectionColor;
 
@@ -98,17 +96,15 @@ public class Selector : MonoBehaviour
 
     void DeselectRoom()
     {
-        selectedRoom.HideAllRoomTasks();
         selectedRoom.selectionRend.enabled = false;
         selectedRoom = null;
 
-        GameManager.singleton.camController.SetTarget(GameManager.singleton.roomManager.routes[0].routeTransform);
+        GameManager.singleton.camController.SetTarget(GameManager.singleton.roomManager.routes[GameManager.singleton.roomManager.currentRoute].routeTransform);
         GameManager.singleton.camController.ToggleOverviewMode(true);
     }
 
     void SelectTask()
     {
-        if (hoveredRoom != null && hoveredRoom.roomStarted) return;
         if (selectedTask != null)
         {
             selectedTask.ToggleHover(false);
@@ -172,7 +168,6 @@ public class Selector : MonoBehaviour
                         {
                             if (hoveredRoom != selectedRoom)
                             {
-                                hoveredRoom.HideAllRoomTasks();
                                 hoveredRoom.selectionRend.enabled = false;
                             }
                             hoveredRoom = null;
@@ -183,13 +178,11 @@ public class Selector : MonoBehaviour
                         {
                             if (hoveredRoom != selectedRoom)
                             {
-                                hoveredRoom.HideAllRoomTasks();
                                 hoveredRoom.selectionRend.enabled = false;
                             }
 
-                            hoveredRoom.ShowAllRoomTasks();
                             hoveredRoom.selectionRend.enabled = true;
-                            hoveredRoom.selectionRend.color = hoveredRoom.roomStarted ? Color.red : hoveredRoom.hoverColor;
+                            hoveredRoom.selectionRend.color = hoveredRoom.hoverColor;
                         }
                     }
                     break;
@@ -201,7 +194,6 @@ public class Selector : MonoBehaviour
             {
                 if (hoveredRoom != selectedRoom)
                 {
-                    hoveredRoom.HideAllRoomTasks();
                     hoveredRoom.selectionRend.enabled = false;
                 }
                hoveredRoom = null;
@@ -235,10 +227,18 @@ public class Selector : MonoBehaviour
         GameManager.singleton.roomManager.photonView.RPC(nameof(RoomManager.SetTaskHighlight), Photon.Pun.RpcTarget.All, selectedTask.room.routeNum, selectedTask.room.roomNum, selectedTask.taskID - 1);
     }
 
-    void UpdateButtons()
+    internal void UpdateButtons()
     {
-        safeButton.interactable = selectedTask.sabotaged;
-        sabotagebutton.interactable = !selectedTask.sabotaged;
+        if (selectedTask.room.roomStarted)
+        {
+            safeButton.interactable = false;
+            sabotagebutton.interactable = false;
+        }
+        else
+        {
+            safeButton.interactable = selectedTask.sabotaged;
+            sabotagebutton.interactable = !selectedTask.sabotaged;
+        }
 
         if (selectedTask.sabotaged)
         {
@@ -264,7 +264,6 @@ public class Selector : MonoBehaviour
         if (hoveredRoom != null)
         {
             hoveredRoom.selectionRend.enabled = false;
-            hoveredRoom.HideAllRoomTasks();
             hoveredRoom = null;
         }
 

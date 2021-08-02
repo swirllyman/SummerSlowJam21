@@ -17,15 +17,16 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     public Sprite[] walkingSprites;
 
     internal int photonPlayerID = -1;
+    internal int bankedGold = 0;
     internal bool narrator = false;
     internal bool usingMap = false;
     internal bool dead = false;
+    internal bool levelFinished = false;
+    internal PlayerSlot myPlayerSlot;
 
-    PlayerSlot myPlayerSlot;
+    int currentGold = 0;
     bool right = true;
     bool walking = false;
-    int currentGold = 0;
-    int bankedGold = 0;
 
     Rigidbody2D myBody;
 
@@ -61,8 +62,15 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
 
         myPlayerSlot.nameText.text = playerNameText.text;
         myPlayerSlot.bgImage.color = myRend.color;
-        myPlayerSlot.bankedGoldText.text = "0";
-        myPlayerSlot.currentGoldText.text = "0";
+        myPlayerSlot.currentGoldText.text = "Current: " + currentGold;
+        myPlayerSlot.bankedGoldText.text = "Banked: " + bankedGold;
+
+        GameManager.singleton.allPlayers = FindObjectsOfType<NetworkPlayer>();
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.singleton.allPlayers = FindObjectsOfType<NetworkPlayer>();
     }
 
     // Update is called once per frame
@@ -70,14 +78,14 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     {
         if (!photonView.IsMine) return;
 
-        if (Input.GetKeyDown(KeyCode.D) &! right)
+        if (Input.GetKeyDown(KeyCode.D) & !right)
         {
             right = true;
             myRend.flipX = false;
             photonView.RPC(nameof(FlipVisuals_RPC), RpcTarget.Others, true);
         }
 
-        if(Input.GetKeyDown(KeyCode.A) && right)
+        if (Input.GetKeyDown(KeyCode.A) && right)
         {
             right = false;
             myRend.flipX = true;
@@ -86,7 +94,7 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
 
         myBody.velocity = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
-        if(Input.GetAxis("Horizontal") != 0.0f || Input.GetAxis("Vertical") != 0.0f)
+        if (Input.GetAxis("Horizontal") != 0.0f || Input.GetAxis("Vertical") != 0.0f)
         {
             if (!walking)
             {
@@ -123,13 +131,47 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
             int newColorID = (int)changedProps["ColorID"];
             myRend.color = Customizer.playerColors[newColorID];
             Customizer.singleton.UpdateAvailableColors();
-            if(myPlayerSlot != null)
+            if (myPlayerSlot != null)
                 myPlayerSlot.bgImage.color = myRend.color;
         }
 
         onPlayerPropertiesUpdated?.Invoke();
     }
 
+    public void FinishLevel()
+    {
+        bankedGold += currentGold;
+        currentGold = 0;
+
+        myPlayerSlot.currentGoldText.text = "Current: " + currentGold;
+        myPlayerSlot.bankedGoldText.text = "Banked: " + bankedGold;
+        if (photonView.IsMine)
+        {
+            GameManager.singleton.currentGoldText.text = "Current Gold: " + currentGold;
+            GameManager.singleton.bankedGoldText.text = "Banked Gold: " + bankedGold;
+        }
+
+        levelFinished = true;
+        myRend.enabled = false;
+        playerNameText.enabled = false;
+    }
+
+    public void ResetGame()
+    {
+        myPlayerSlot.nameText.color = Color.white;
+        currentGold = 0;
+        bankedGold = 0;
+        myPlayerSlot.currentGoldText.text = "Current: " + currentGold;
+        myPlayerSlot.bankedGoldText.text = "Banked: " + bankedGold;
+
+        if (photonView.IsMine)
+        {
+            GameManager.singleton.currentGoldText.text = "Current Gold: 0";
+            GameManager.singleton.bankedGoldText.text = "Banked Gold: 0";
+        }
+    }
+
+    #region Local Player Calls
     public void LocalPlayerSetColor(int colorID)
     {
         Hashtable readyState = new Hashtable() { ["ColorID"] = colorID };
@@ -144,17 +186,30 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
 
     public void LocalPlayerSetName(string newName)
     {
+        name = newName;
         PhotonNetwork.LocalPlayer.NickName = newName;
         GameManager.singleton.notification.PlayNotification("Name Set: " + newName);
         photonView.RPC(nameof(SetPlayerName_RPC), RpcTarget.All, newName);
     }
 
-    public void LocalPlayerRouteFinished()
+    public void LocalPlayerFinishedGame()
     {
         Hashtable readyState = new Hashtable() { ["Ready"] = false };
         PhotonNetwork.LocalPlayer.SetCustomProperties(readyState);
+        photonView.RPC(nameof(ResetAfterGame_RPC), RpcTarget.All);
+    }
 
+    public void LocalPlayerRouteFinished()
+    {
         photonView.RPC(nameof(FinishRoute_RPC), RpcTarget.All);
+    }
+    #endregion
+    [PunRPC]
+    public void ResetAfterGame_RPC()
+    {
+        myRend.enabled = true;
+        playerNameText.enabled = true;
+        narrator = false;
     }
 
     [PunRPC]
@@ -185,7 +240,9 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     {
         bankedGold += currentGold;
         currentGold = 0;
-        myPlayerSlot.bankedGoldText.text = "" + bankedGold;
+
+        myPlayerSlot.currentGoldText.text = "Current: " + currentGold;
+        myPlayerSlot.bankedGoldText.text = "Banked: " + bankedGold;
         if (photonView.IsMine)
         {
             GameManager.singleton.currentGoldText.text = "Current Gold: " + currentGold;
@@ -196,6 +253,7 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     [PunRPC]
     void SetPlayerName_RPC(string newName)
     {
+        name = newName;
         playerNameText.text = newName;
         if(myPlayerSlot != null)
             myPlayerSlot.nameText.text = playerNameText.text;
@@ -205,9 +263,10 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     public void Die_RPC()
     {
         dead = true;
+        myPlayerSlot.nameText.color = Color.gray;
         if (photonView.IsMine)
         {
-            GameManager.singleton.notification.PlayNotification("You Died");
+            GameManager.singleton.PlayDeathEffect();
             myRend.color = new Color(myRend.color.r, myRend.color.g, myRend.color.b, .25f);
         }
         else
@@ -270,8 +329,10 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     public void Revive_RPC()
     {
         dead = false;
+        myPlayerSlot.nameText.color = Color.white;
         if (photonView.IsMine)
         {
+            GameManager.singleton.PlayReviveEffect();
             myRend.color = new Color(myRend.color.r, myRend.color.g, myRend.color.b, 1.0f);
         }
         else
@@ -285,12 +346,17 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     public void SetNarrator_RPC()
     {
         narrator = true;
+        myPlayerSlot.nameText.color = Color.red;
         if (photonView.IsMine)
         {
             GameManager.singleton.notification.PlayNotification("<color=red>You</color> Are The Boss");
-            transform.position = NetworkManager.singleton.holdingArea.position;
+            transform.position = GameManager.singleton.roomManager.holdingArea.position;
             if (!GameManager.singleton.mapView.tutorialized)
                 GameManager.singleton.selector.tutorial.SetActive(true);
+
+            GameManager.singleton.notification.PlayNotification("Sabotage Phase!");
+            GameManager.singleton.camController.SetTarget(GameManager.singleton.roomManager.routes[GameManager.singleton.roomManager.currentRoute].rooms[GameManager.singleton.roomManager.currentRoom].selectionRend.transform);
+            GameManager.singleton.roomManager.ToggleAllRouteTasks(true);
         }
         else
         {
@@ -302,17 +368,27 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks
     [PunRPC]
     public void AddGold_RPC(int goldToAdd)
     {
-        currentGold += goldToAdd;
+        if (narrator)
+        {
+            bankedGold += goldToAdd;
+        }
+        else 
+        {
+            currentGold += goldToAdd;
+        }
+
         GameObject coinObject = Instantiate(coinPrefab, transform.position, Quaternion.identity);
 
         LeanTween.moveLocalY(coinObject, coinObject.transform.localPosition.y + .15f, 1.0f).setEaseInOutExpo();
         coinObject.GetComponent<Coin>().SetValue(goldToAdd);
 
-        myPlayerSlot.currentGoldText.text = ""+currentGold;
+        myPlayerSlot.currentGoldText.text = "Current: " + currentGold;
+        myPlayerSlot.bankedGoldText.text = "Banked: " + bankedGold;
 
         if (photonView.IsMine)
         {
             GameManager.singleton.currentGoldText.text = "Current Gold: " + currentGold;
+            GameManager.singleton.currentGoldText.text = "Banked Gold: " + bankedGold;
         }
     }
 }

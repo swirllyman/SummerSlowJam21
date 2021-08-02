@@ -10,13 +10,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public static NetworkManager singleton;
     public GameObject playerPrefab;
     public Transform startTransform;
-    public Transform holdingArea;
+    
     public GameObject titleScreenGameObject;
-    public DoorObject holdingAreaDoor;
-    public DoorObject initialAreaDoor;
-
+    
     //[SerializeField]
     private byte maxPlayersPerRoom = 4;
+
 
     public delegate void PlayerCountUpdatedCallback();
     public event PlayerCountUpdatedCallback onPlayerCountUpdated;
@@ -113,35 +112,5 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         yield return new WaitForSeconds(2.0f);
         GameManager.singleton.roomManager.RouteFinished();
-    }
-
-    [PunRPC]
-    public void StartGame_RPC()
-    {
-        StartCoroutine(StartGameRoutine());
-
-
-        if (photonView.IsMine)
-        {
-            NetworkPlayer[] allPlayers = FindObjectsOfType<NetworkPlayer>();
-            allPlayers[Random.Range(0, allPlayers.Length)].photonView.RPC(nameof(NetworkPlayer.SetNarrator_RPC), RpcTarget.All);
-        }
-    }
-
-    IEnumerator StartGameRoutine()
-    {
-        yield return new WaitForSeconds(2.0f);
-        for (int i = 5; i > 0; i--)
-        {
-            GameManager.singleton.notification.PlayNotification("Game Starting: " + i);
-            yield return new WaitForSeconds(1.0f);
-        }
-
-        initialAreaDoor.OpenDoor();
-
-        if (PhotonNetwork.PlayerListOthers.Length <= 0) 
-        {
-            holdingAreaDoor.OpenDoor();
-        }
-    }
+    }    
 }
